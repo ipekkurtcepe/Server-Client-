@@ -1,0 +1,113 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class servercode {
+
+    public static void main(String[] args) throws IOException {
+        Socket socket = null;
+        InputStreamReader inputStreamReader = null;
+        OutputStreamWriter outputStreamWriter = null;
+        BufferedWriter bufferedWriter = null;
+        BufferedReader bufferedReader = null;
+        ServerSocket serverSocket = null;
+
+        try {
+            serverSocket = new ServerSocket(555);
+        } catch (IOException e) {
+            System.err.println("Could not listen on port: 5555");
+            System.exit(-1);
+        }
+        
+        System.out.println("Server is running on port: 5555");
+
+        while (true) {
+            try {
+                socket = serverSocket.accept();// create new socket every time
+                inputStreamReader = new InputStreamReader(socket.getInputStream());
+                outputStreamWriter = new OutputStreamWriter(socket.getOutputStream());
+
+                bufferedReader = new BufferedReader(inputStreamReader);
+                bufferedWriter = new BufferedWriter(outputStreamWriter);
+
+                System.out.println("Client connected");
+
+                // Send welcome message to client
+                bufferedWriter.write("Welcome to the server!");
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
+
+                // Ask for user name and password
+                bufferedWriter.write("Please enter your username:");
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
+
+                String username = bufferedReader.readLine();
+
+                bufferedWriter.write("Please enter your password:");
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
+
+                String password = bufferedReader.readLine();
+
+                // Check if user name and password match
+                if (username.equals("CMPE322") && password.equals("bilgiuni")) {
+                    bufferedWriter.write("You are authorized. You can ask me 'date', 'time', 'capTurkey', 'quit'");
+                    bufferedWriter.newLine();
+                    bufferedWriter.flush();
+                } else {
+                    bufferedWriter.write("Invalid username or password. Connection closed.");
+                    bufferedWriter.newLine();
+                    bufferedWriter.flush();
+                    socket.close();
+                    continue;
+                }
+
+                while (true) {
+                    String msgFromClient = bufferedReader.readLine();
+
+                    System.out.println("Client: " + msgFromClient);
+
+                    if (msgFromClient.equalsIgnoreCase("date")) {
+                        String date = new java.util.Date().toString();
+                        bufferedWriter.write(date);
+                        bufferedWriter.newLine();
+                        bufferedWriter.flush();
+                    } else if (msgFromClient.equalsIgnoreCase("time")) {
+                        String time = new java.util.Date().toString();
+                        bufferedWriter.write(time);
+                        bufferedWriter.newLine();
+                        bufferedWriter.flush();
+                    } else if (msgFromClient.equalsIgnoreCase("capTurkey")) {
+                        bufferedWriter.write("Ankara");
+                        bufferedWriter.newLine();
+                        bufferedWriter.flush();
+                    } else if (msgFromClient.equalsIgnoreCase("quit")) {
+                        bufferedWriter.write("Bye bye");
+                        bufferedWriter.newLine();
+                        bufferedWriter.flush();
+                        break;
+                    } else {
+                        bufferedWriter.write("Invalid command");
+                        bufferedWriter.newLine();
+                        bufferedWriter.flush();
+                    }
+                }
+
+                socket.close();
+                inputStreamReader.close();
+                outputStreamWriter.close();
+                bufferedReader.close();
+                bufferedWriter.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+}

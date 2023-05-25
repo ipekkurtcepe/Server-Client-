@@ -1,0 +1,81 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+public class clientcode {
+
+    public static void main(String[] args) {
+        Socket socket = null;
+        InputStreamReader inputStreamReader = null;
+        OutputStreamWriter outputStreamWriter = null;
+        BufferedWriter bufferedWriter = null;
+        BufferedReader bufferedReader = null;
+
+        try {
+            socket = new Socket("localhost", 555);
+            inputStreamReader = new InputStreamReader(socket.getInputStream());
+            outputStreamWriter = new OutputStreamWriter(socket.getOutputStream());
+
+            bufferedReader = new BufferedReader(inputStreamReader);
+            bufferedWriter = new BufferedWriter(outputStreamWriter);
+
+            System.out.println("Connected to server");
+
+            // Read welcome message from server
+            String welcomeMsg = bufferedReader.readLine();
+            System.out.println("Server: " + welcomeMsg);
+
+            // Ask for user name and password
+            String username = "";
+            String password = "";
+            while (username.isEmpty()) {
+                System.out.println("Server: " + bufferedReader.readLine());
+                username = System.console().readLine();
+                bufferedWriter.write(username);
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
+            }
+            while (password.isEmpty()) {
+                System.out.println("Server: " + bufferedReader.readLine());
+                password = new String(System.console().readPassword());
+                bufferedWriter.write(password);
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
+            }
+
+            // Read authorization message from server
+            String authMsg = bufferedReader.readLine();
+            System.out.println("Server: " + authMsg);
+
+            // Send commands to server
+            while (true) {
+                String input = System.console().readLine();
+                bufferedWriter.write(input);
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
+
+                String response = bufferedReader.readLine();
+                System.out.println("Server: " + response);
+
+                if (input.equalsIgnoreCase("quit")) {
+                    break;
+                }
+            }
+
+            socket.close();
+            inputStreamReader.close();
+            outputStreamWriter.close();
+            bufferedReader.close();
+            bufferedWriter.close();
+
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
